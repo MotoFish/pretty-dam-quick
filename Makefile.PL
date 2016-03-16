@@ -30,7 +30,7 @@ requires_external_bin 'gphoto2';
 requires_external_bin 'killall';
 requires_external_bin 'mkdir';
 requires_external_bin 'rsync';
-requires_external_bin 'pwd';
+requires_external_bin 'touch';
 
 install_script( 'script/pdq', );
 

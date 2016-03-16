@@ -3,6 +3,7 @@ package App::PrettyDamQuick;
 use Modern::Perl '2014';
 use 5.022;
 our $VERSION = '0.01';
+my $config_file_name = '.pdq';
 
 =head1 NAME
 
@@ -91,7 +92,14 @@ sub new_session {
     unless ($session_name) {
         die 'Please provide a session name argument';
     }
-    return `mkdir $session_name`;
+    `mkdir $session_name`;
+    `touch $session_name/$config_file_name`;
+}
+
+sub _check_session_directory {
+    unless ( -e $config_file_name ) {
+        die "You must change (cd) into a valid pdq session directory";
+    }
 }
 
 =head2 shoot
@@ -101,13 +109,14 @@ Filename prefix is optional.
 
 sub shoot {
     my $self            = shift;
-    my $filename_prefix = shift;
+    my $filename_prefix = shift || '';
+    $self->_check_session_directory;
 
     #free up the usb port: http://tinyurl.com/hchdopy
     system "killall -SIGINT PTPCamera";
 
     # Shoot tethered photos using the optionally provided filename_prefix.
-    say(`gphoto2 --capture-tethered --filename $filename_prefix%03n.%C`);
+    say(`gphoto2 --capture-tethered --filename=$filename_prefix%03n.%C`);
 }
 
 =head2 dupe
@@ -117,6 +126,7 @@ Duplicates the files from the current session to a new location/session.
 sub dupe {
     my $self                       = shift;
     my $destination_directory_path = shift;
+    $self->_check_session_directory;
     say(`rsync -avhz . $destination_directory_path`);
 }
 
@@ -128,6 +138,7 @@ column of the provided csv, adding keywords for every subsequent column.
 sub generate_xmp {
     my $self              = shift;
     my $manifest_filename = shift;
+    $self->_check_session_directory;
     unless ($manifest_filename) {
         die 'You must provide the path to a csv containing'
           . ' the filename prefix pattern followed by keywords';
@@ -141,6 +152,7 @@ sub generate_xmp {
 sub check_manifest {
     my $self              = shift;
     my $manifest_filename = shift;
+    $self->_check_session_directory;
     unless ($manifest_filename) {
         die 'You must provide the path to a csv containing'
           . ' the filename prefix pattern';
