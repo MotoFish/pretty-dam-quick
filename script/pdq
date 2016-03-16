@@ -1,0 +1,16 @@
+#!perl
+
+use Modern::Perl;
+use App::PrettyDamQuick;
+
+my @args = @ARGV;
+my $command = shift @args || 'help';
+
+if (App::PrettyDamQuick->can($command)) {
+	App::PrettyDamQuick->$command(@args);
+}
+else {
+    warn "$command is not a command\n";
+    App::PrettyDamQuick->help;
+}
+1;
