@@ -1,5 +1,5 @@
 use strict;
-use 5.018;
+use 5.016;
 use inc::Module::Install;
 
 name 'App-PrettyDamQuick';
@@ -7,7 +7,7 @@ all_from 'lib/App/PrettyDamQuick.pm';
 author q{Chris Alef <chris@crickertech.com>};
 license 'cc0';
 
-perl_version 5.018;
+perl_version 5.016;
 
 tests_recursive('t');
 
