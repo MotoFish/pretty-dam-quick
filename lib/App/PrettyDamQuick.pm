@@ -1,6 +1,6 @@
 package App::PrettyDamQuick;
 
-use Modern::Perl '2014';
+use Modern::Perl;
 use 5.016;
 our $VERSION = '0.01';
 my $config_file_name = '.pdq';

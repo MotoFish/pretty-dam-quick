@@ -1,6 +1,6 @@
 #!perl
 
-use Modern::Perl '2014';
+use Modern::Perl;
 use App::PrettyDamQuick;
 use Try::Tiny;
 
