@@ -13,10 +13,7 @@ from cameras and facilitate production workflows activities within a digital stu
 =head1 SYNOPSIS
 
 #Installation
-perl Makefile.PL
-make
-make test
-make install
+./go
 pdq help
 
 =head1 AUTHOR
