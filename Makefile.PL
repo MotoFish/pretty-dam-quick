@@ -20,9 +20,17 @@ resources(
 
 configure_requires( 'Module::Install' => 0, );
 
-build_requires( 'Test::More' => 0, );
+build_requires(
+    'Test::More'          => 0,
+    'Test::Pod::Coverage' => 1.10,
+    'Test::CheckManifest' => 1.29,
+);
 
-requires( 'Modern::Perl' => 1.20150127, 'Try::Tiny' => 0.24 );
+requires(
+    'Image::ExifTool' => 10.10,
+    'Modern::Perl'    => 1.20150127,
+    'Try::Tiny'       => 0.24
+);
 
 #its hacky, but this whole package is little more than some conveniences around other tools
 #this could be moved to perl, but portability isn't really an objective (yet)
