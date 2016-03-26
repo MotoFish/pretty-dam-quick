@@ -27,9 +27,10 @@ build_requires(
 );
 
 requires(
-    'Image::ExifTool' => 10.10,
-    'Modern::Perl'    => 1.20150127,
-    'Try::Tiny'       => 0.24
+    'Image::ExifTool'  => 10.10,
+    'Modern::Perl'     => 1.20150127,
+    'Text::CSV::Slurp' => 1.03,
+    'Try::Tiny'        => 0.24
 );
 
 #its hacky, but this whole package is little more than some conveniences around other tools

@@ -1,6 +1,7 @@
 package App::PrettyDamQuick;
 
 use Modern::Perl;
+use Text::CSV::Slurp;
 use 5.016;
 our $VERSION = '0.01';
 my $config_file_name = '.pdq';
@@ -66,15 +67,18 @@ cd SessionName
 # Shoot images tethered to the system, ideally into a created session
 pdq shoot optional_filename_prefix
 
-# duplicate the images
+# Rename the files matching the pattern in the \"shootname\" column to the pattern in the \"filename\" column
+pdq rename filename.csv
+
+# duplicate the image folder to a new location
 pdq dupe /Volumes/ExternalDrive 
 
 # build the XMP keyword sidecar files for all images matching the filename_prefix
 # from a csv with a filename_prefix followed by columns of keywords
-pdq generate_xmp ~/path/to/image-keyword-manifest.csv
+pdq generate_xmp /path/to/image-keyword-manifest.csv
 
 # list what image prefixes are missing
-pdq check_manifest ~/path/to/image-keyword-manifest.csv ~/path/to/SessionName"
+pdq check_manifest /path/to/image-keyword-manifest.csv"
     );
 }
 
@@ -105,7 +109,7 @@ Filename prefix is optional.
 =cut
 
 sub shoot {
-    my $self            = shift;
+    my $self = shift;
     my $filename_prefix = shift || '';
     $self->_check_session_directory;
 
@@ -114,6 +118,50 @@ sub shoot {
 
     # Shoot tethered photos using the optionally provided filename_prefix.
     say(`gphoto2 --capture-tethered --filename=$filename_prefix%03n.%C`);
+}
+
+=head2 rename
+Renames filenames matching the filename prefix in the first column of a csv to the second column.
+CSV filename is required.
+=cut
+
+sub rename {
+    my $self = shift;
+    $self->_check_session_directory;
+    my $csv_filename = shift || '';
+    unless ($csv_filename) {
+        die "You must provide the path to a csv file.";
+    }
+    unless ( -e $csv_filename ) {
+        die "Could not file file $csv_filename";
+    }
+
+    #open CSV
+    my $data = Text::CSV::Slurp->load( file => $csv_filename )
+      || die "Could not open $csv_filename";
+
+    #for each line in the csv
+    for my $line (@$data) {
+        my $from_filename_pattern = $line->{'shootname'}
+          || die "Could not find column \"shootname\" to rename from";
+        my $to_filename_pattern = $line->{'filename'}
+          || die "Could not find column \"filename\" to rename to";
+        print "rename $from_filename_pattern to $to_filename_pattern\n";
+        my $matching_filenames = `ls $from_filename_pattern*`;
+        my @filenames = split /\n/, $matching_filenames;
+        if ( scalar @filenames < 1 ) {
+            print "  $from_filename_pattern matches 0 files\n";
+            next;
+        }
+
+        #for each file matching the first column
+        for my $filename (@filenames) {
+            my $new_filename = $filename;
+            $new_filename =~ s/$from_filename_pattern/$to_filename_pattern/g;
+            `mv $filename $new_filename`;
+            print "  Moved $filename to $new_filename\n";
+        }
+    }
 }
 
 =head2 dupe
