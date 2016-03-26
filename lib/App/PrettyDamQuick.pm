@@ -143,9 +143,11 @@ sub rename {
     #for each line in the csv
     for my $line (@$data) {
         my $from_filename_pattern = $line->{'shootname'}
-          || die "Could not find column \"shootname\" to rename from";
+          || die
+"Could not find column \"shootname\" to rename from or shootname is blank";
         my $to_filename_pattern = $line->{'filename'}
-          || die "Could not find column \"filename\" to rename to";
+          || die
+"Could not find column \"filename\" to rename to or shootname is blank";
         print "rename $from_filename_pattern to $to_filename_pattern\n";
         my $matching_filenames = `ls $from_filename_pattern*`;
         my @filenames = split /\n/, $matching_filenames;
