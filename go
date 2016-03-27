@@ -11,4 +11,4 @@ brew brewdle
 perl Makefile.PL
 make
 make test
-make install
+sudo make install
