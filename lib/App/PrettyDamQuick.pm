@@ -3,7 +3,7 @@ package App::PrettyDamQuick;
 use Modern::Perl;
 use Text::CSV::Slurp;
 use 5.016;
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 my $config_file_name = '.pdq';
 my $csv_filename     = 'manifest.csv';
 
@@ -187,7 +187,7 @@ Displays version and usage information.  Example:
 
 sub help {
     say("Version: $VERSION");
-	`perldoc App::PrettyDamQuick`;
+	say(`perldoc App::PrettyDamQuick`);
 }
 
 =head1 AUTHOR
