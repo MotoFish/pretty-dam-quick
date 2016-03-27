@@ -137,12 +137,12 @@ sub update_xmp {
             say("  no keywords to apply");
             next;
         }
-        say("updating xmps for $to_filename_pattern");
         my $matching_filenames = `ls $to_filename_pattern*.xmp 2>/dev/null`;
         my @filenames = split /\n/, $matching_filenames;
         if ( scalar @filenames < 1 ) {
             next;
         }
+        say("updating xmps for $to_filename_pattern");
         for my $filename (@filenames) {
             say("  $filename: applying keywords $keywords");
             my $subject_string = join '" -Subject="', @keywords;
