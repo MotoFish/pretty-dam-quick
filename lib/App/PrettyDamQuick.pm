@@ -3,7 +3,7 @@ package App::PrettyDamQuick;
 use 5.016;
 use Modern::Perl;
 use Text::CSV::Slurp;
-our $VERSION = '0.03';
+our $VERSION = '0.04';
 my $config_file_name = '.pdq';
 my $csv_filename     = 'manifest.csv';
 
@@ -78,10 +78,10 @@ sub rename {
     for my $line (@$data) {
         my $from_filename_pattern = $line->{'shootname'}
           || die
-"Could not find column \"shootname\" to rename from or shootname is blank";
+"Could not find column \"shootname\" in manifest.csv or shootname is blank";
         my $to_filename_pattern = $line->{'filename'}
           || die
-"Could not find column \"filename\" to rename to or shootname is blank";
+"Could not find column \"filename\" in manifest.csv or shootname is blank";
         say("rename $from_filename_pattern to $to_filename_pattern");
         my $matching_filenames = `ls $from_filename_pattern* 2>/dev/null`;
         my @filenames = split /\n/, $matching_filenames;
@@ -128,10 +128,9 @@ sub update_xmp {
       || die "Could not open $csv_filename";
     for my $line (@$data) {
         my $to_filename_pattern = $line->{'filename'}
-          || die "Could not find column \"filename\" to apply keywords to";
+          || die "Could not find column \"filename\" in manifest.csv";
         my $keywords = $line->{'keywords'}
-          || die
-          "Could not find column \"keywords\" containing keywords to apply";
+          || die "Could not find column \"keywords\" in manifest.csv";
         my @keywords = split ',', $keywords;
         if ( scalar @keywords < 1 ) {
             say("  no keywords to apply");
@@ -146,6 +145,12 @@ sub update_xmp {
         for my $filename (@filenames) {
             say("  $filename: applying keywords $keywords");
             my $subject_string = join '" -Subject="', @keywords;
+            if ( my $description = $line->{'description'} ) {
+                $description =~ s/\"//g;
+                say("  $filename: applying Description $description");
+                $subject_string =
+                  "$subject_string\" -Description=\"$description";
+            }
             `exiftool -Subject="$subject_string" $filename`;
             `rm *.xmp_original`;
         }
