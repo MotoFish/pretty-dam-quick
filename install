@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+cd /tmp
+git clone https://github.com/MotoFish/pretty-dam-quick.git
+cd pretty-dam-quick
+./go
+cd /tmp
+rm -rf pretty-dam-quick
