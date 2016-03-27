@@ -5,7 +5,7 @@ use Text::CSV::Slurp;
 use 5.016;
 our $VERSION = '0.01';
 my $config_file_name = '.pdq';
-my $csv_filename = 'manifest.csv';
+my $csv_filename     = 'manifest.csv';
 
 =head1 NAME
 
@@ -179,7 +179,7 @@ column of the provided csv, adding subjects (aka keywords) for every subsequent 
 =cut
 
 sub update_xmp {
-    my $self         = shift;
+    my $self = shift;
     $self->_check_session_directory;
     my $data = Text::CSV::Slurp->load( file => $csv_filename )
       || die "Could not open $csv_filename";
@@ -189,23 +189,24 @@ sub update_xmp {
         my $keywords = $line->{'keywords'}
           || die
           "Could not find column \"keywords\" containing keywords to apply";
-        my @keywords = grep { $_ ne '' } split $keywords, ',';
+        my @keywords = split ',', $keywords;
         if ( scalar @keywords < 1 ) {
             print "  no keywords to apply\n";
             next;
         }
         print "updating xmps for $to_filename_pattern\n";
-        my $matching_filenames = `ls $to_filename_pattern*.xmp`;
+        my $matching_filenames = `ls $to_filename_pattern*.xmp 2>/dev/null`;
         my @filenames = split /\n/, $matching_filenames;
         if ( scalar @filenames < 1 ) {
-            print "  $to_filename_pattern matches 0 files\n";
+            print "  $to_filename_pattern is missing\n";
             next;
         }
         for my $filename (@filenames) {
             print "  applying keywords $keywords to $filename\n";
-            my $subject_string = join ' -Subject=', @keywords;
-            `exiftool -Subject=$subject_string $filename`;
-			`rm *.xmp_original`;
+            my $subject_string = join '" -Subject="', @keywords;
+            print "  exiftool -Subject=\"$subject_string\" $filename\n";
+            `exiftool -Subject="$subject_string" $filename`;
+            `rm *.xmp_original`;
         }
     }
 }
@@ -216,14 +217,20 @@ in the manifest and lists the missing files.
 =cut
 
 sub check_manifest {
-    my $self              = shift;
-    my $manifest_filename = shift;
+    my $self = shift;
     $self->_check_session_directory;
-    unless ($manifest_filename) {
-        die 'You must provide the path to a csv containing'
-          . ' the filename prefix pattern';
+    my $data = Text::CSV::Slurp->load( file => $csv_filename )
+      || die "Could not open $csv_filename";
+    for my $line (@$data) {
+        my $to_filename_pattern = $line->{'filename'}
+          || die "Could not find column \"filename\" to apply keywords to";
+        my $matching_filenames = `ls $to_filename_pattern*.xmp 2>/dev/null`;
+        my @filenames = split /\n/, $matching_filenames;
+        if ( scalar @filenames < 1 ) {
+            print "$to_filename_pattern is missing\n";
+            next;
+        }
     }
-    die 'check_manifest not yet implemented';
 }
 
 1;    # End of App::PrettyDamQuick
