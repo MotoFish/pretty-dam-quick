@@ -3,7 +3,7 @@ package App::PrettyDamQuick;
 use 5.016;
 use Modern::Perl;
 use Text::CSV::Slurp;
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 my $config_file_name = '.pdq';
 my $csv_filename     = 'manifest.csv';
 
