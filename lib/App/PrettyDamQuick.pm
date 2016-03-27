@@ -5,6 +5,7 @@ use Text::CSV::Slurp;
 use 5.016;
 our $VERSION = '0.01';
 my $config_file_name = '.pdq';
+my $csv_filename = 'manifest.csv';
 
 =head1 NAME
 
@@ -67,18 +68,17 @@ cd SessionName
 # Shoot images tethered to the system, ideally into a created session
 pdq shoot optional_filename_prefix
 
-# Rename the files matching the pattern in the \"shootname\" column to the pattern in the \"filename\" column
-pdq rename filename.csv
+# Rename from the \"shootname\" column to the \"filename\" column in manifest.csv
+pdq rename
 
 # duplicate the image folder to a new location
 pdq dupe /Volumes/ExternalDrive 
 
-# build the XMP keyword sidecar files for all images matching the filename_prefix
-# from a csv with a filename_prefix followed by columns of keywords
-pdq generate_xmp /path/to/image-keyword-manifest.csv
+# update the XMP keyword sidecar files from manifest.csv
+pdq update_xmp
 
-# list what image prefixes are missing
-pdq check_manifest /path/to/image-keyword-manifest.csv"
+# list what image prefixes are missing from manifest.csv
+pdq check_manifest"
     );
 }
 
@@ -128,10 +128,6 @@ CSV filename is required.
 sub rename {
     my $self = shift;
     $self->_check_session_directory;
-    my $csv_filename = shift || '';
-    unless ($csv_filename) {
-        die "You must provide the path to a csv file.";
-    }
     unless ( -e $csv_filename ) {
         die "Could not file file $csv_filename";
     }
@@ -177,23 +173,46 @@ sub dupe {
     say(`rsync -avhz . $destination_directory_path`);
 }
 
-=head2 generate_xmp
+=head2 update_xmp
 Creates xmp sidecar files for all files matching the prefixes in the first 
-column of the provided csv, adding keywords for every subsequent column.
+column of the provided csv, adding subjects (aka keywords) for every subsequent column.
 =cut
 
-sub generate_xmp {
-    my $self              = shift;
-    my $manifest_filename = shift;
+sub update_xmp {
+    my $self         = shift;
     $self->_check_session_directory;
-    unless ($manifest_filename) {
-        die 'You must provide the path to a csv containing'
-          . ' the filename prefix pattern followed by keywords';
+    my $data = Text::CSV::Slurp->load( file => $csv_filename )
+      || die "Could not open $csv_filename";
+    for my $line (@$data) {
+        my $to_filename_pattern = $line->{'filename'}
+          || die "Could not find column \"filename\" to apply keywords to";
+        my $keywords = $line->{'keywords'}
+          || die
+          "Could not find column \"keywords\" containing keywords to apply";
+        my @keywords = grep { $_ ne '' } split $keywords, ',';
+        if ( scalar @keywords < 1 ) {
+            print "  no keywords to apply\n";
+            next;
+        }
+        print "updating xmps for $to_filename_pattern\n";
+        my $matching_filenames = `ls $to_filename_pattern*.xmp`;
+        my @filenames = split /\n/, $matching_filenames;
+        if ( scalar @filenames < 1 ) {
+            print "  $to_filename_pattern matches 0 files\n";
+            next;
+        }
+        for my $filename (@filenames) {
+            print "  applying keywords $keywords to $filename\n";
+            my $subject_string = join ' -Subject=', @keywords;
+            `exiftool -Subject=$subject_string $filename`;
+			`rm *.xmp_original`;
+        }
     }
-    die 'generate_xmp not yet implemented';
 }
 
 =head2 check_manifest
+Verifies that the session directory contains all of the filename patterns
+in the manifest and lists the missing files.
 =cut
 
 sub check_manifest {
