@@ -1,8 +1,8 @@
 package App::PrettyDamQuick;
 
+use 5.016;
 use Modern::Perl;
 use Text::CSV::Slurp;
-use 5.016;
 our $VERSION = '0.02';
 my $config_file_name = '.pdq';
 my $csv_filename     = 'manifest.csv';
@@ -82,11 +82,11 @@ sub rename {
         my $to_filename_pattern = $line->{'filename'}
           || die
 "Could not find column \"filename\" to rename to or shootname is blank";
-        print "rename $from_filename_pattern to $to_filename_pattern\n";
-        my $matching_filenames = `ls $from_filename_pattern*`;
+        say("rename $from_filename_pattern to $to_filename_pattern");
+        my $matching_filenames = `ls $from_filename_pattern* 2>/dev/null`;
         my @filenames = split /\n/, $matching_filenames;
         if ( scalar @filenames < 1 ) {
-            print "  $from_filename_pattern matches 0 files\n";
+            say("  $from_filename_pattern matches 0 files");
             next;
         }
 
@@ -95,7 +95,7 @@ sub rename {
             my $new_filename = $filename;
             $new_filename =~ s/$from_filename_pattern/$to_filename_pattern/g;
             `mv $filename $new_filename`;
-            print "  Moved $filename to $new_filename\n";
+            say("  Moved $filename to $new_filename");
         }
     }
 }
@@ -134,20 +134,18 @@ sub update_xmp {
           "Could not find column \"keywords\" containing keywords to apply";
         my @keywords = split ',', $keywords;
         if ( scalar @keywords < 1 ) {
-            print "  no keywords to apply\n";
+            say("  no keywords to apply");
             next;
         }
-        print "updating xmps for $to_filename_pattern\n";
+        say("updating xmps for $to_filename_pattern");
         my $matching_filenames = `ls $to_filename_pattern*.xmp 2>/dev/null`;
         my @filenames = split /\n/, $matching_filenames;
         if ( scalar @filenames < 1 ) {
-            print "  $to_filename_pattern is missing\n";
             next;
         }
         for my $filename (@filenames) {
-            print "  applying keywords $keywords to $filename\n";
+            say("  $filename: applying keywords $keywords");
             my $subject_string = join '" -Subject="', @keywords;
-            print "  exiftool -Subject=\"$subject_string\" $filename\n";
             `exiftool -Subject="$subject_string" $filename`;
             `rm *.xmp_original`;
         }
@@ -166,14 +164,35 @@ sub check_manifest {
     $self->_check_session_directory;
     my $data = Text::CSV::Slurp->load( file => $csv_filename )
       || die "Could not open $csv_filename";
+    my %extra_filenames = map { $_ => 1 } split /\n/, `ls`;
+    say("Missing files:");
+
+    #display the missing filenames
     for my $line (@$data) {
         my $to_filename_pattern = $line->{'filename'}
           || die "Could not find column \"filename\" to apply keywords to";
+
+        #find filenames matching the line of the manifest
         my $matching_filenames = `ls $to_filename_pattern*.xmp 2>/dev/null`;
         my @filenames = split /\n/, $matching_filenames;
         if ( scalar @filenames < 1 ) {
-            print "$to_filename_pattern is missing\n";
+            say("  $to_filename_pattern");
             next;
+        }
+
+        #remove extra filenames that match names in the manifest
+        for my $filename ( keys %extra_filenames ) {
+            if ( $filename =~ /^$to_filename_pattern/ ) {
+                delete $extra_filenames{$filename};
+            }
+        }
+    }
+
+    #display the extra filenames
+    if ( scalar keys %extra_filenames > 0 ) {
+        say("Extra files:");
+        for my $filename ( keys %extra_filenames ) {
+            say("  $filename");
         }
     }
 }
@@ -187,42 +206,7 @@ Displays version and usage information.  Example:
 
 sub help {
     say("Version: $VERSION");
-	say(`perldoc App::PrettyDamQuick`);
+    say(`perldoc App::PrettyDamQuick`);
 }
-
-=head1 AUTHOR
-
-Chris Alef, C<< <chris at crickertech.com> >>
-
-=head1 LICENSE AND COPYRIGHT
-
-Copyright 2016 Chris Alef.
-
-This program is distributed under the CC0 1.0 Universal License:
-L<http://creativecommons.org/publicdomain/zero/1.0/>
-
-The person who associated a work with this deed has dedicated the work
-to the public domain by waiving all of his or her rights to the work
-worldwide under copyright law, including all related and neighboring
-rights, to the extent allowed by law.
-
-You can copy, modify, distribute and perform the work, even for
-commercial purposes, all without asking permission. See Other
-Information below.
-
-Other Information:
-
-* In no way are the patent or trademark rights of any person affected
-by CC0, nor are the rights that other persons may have in the work or
-in how the work is used, such as publicity or privacy rights. 
-
-* Unless expressly stated otherwise, the person who associated a work
-with this deed makes no warranties about the work, and disclaims
-liability for all uses of the work, to the fullest extent permitted
-by applicable law. 
-
-* When using or citing the work, you should not imply endorsement by
-the author or the affirmer.
-=cut
 
 1;    # End of App::PrettyDamQuick
