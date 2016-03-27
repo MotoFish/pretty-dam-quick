@@ -7,84 +7,24 @@ our $VERSION = '0.01';
 my $config_file_name = '.pdq';
 my $csv_filename     = 'manifest.csv';
 
+sub _check_session_directory {
+    unless ( -e $config_file_name ) {
+        die "You must change (cd) into a valid pdq session directory";
+    }
+}
+
 =head1 NAME
 
 App::PrettyDamQuick - Pretty Damn Quick (aka pdq) is a program to automate digital image ingestion 
 from cameras and facilitate production workflows activities within a digital studio.
 
-=head1 SYNOPSIS
-
-#Installation
-./go
-pdq help
-
-=head1 AUTHOR
-
-Chris Alef, C<< <chris at crickertech.com> >>
-
-=head1 LICENSE AND COPYRIGHT
-
-Copyright 2016 Chris Alef.
-
-This program is distributed under the CC0 1.0 Universal License:
-L<http://creativecommons.org/publicdomain/zero/1.0/>
-
-The person who associated a work with this deed has dedicated the work
-to the public domain by waiving all of his or her rights to the work
-worldwide under copyright law, including all related and neighboring
-rights, to the extent allowed by law.
-
-You can copy, modify, distribute and perform the work, even for
-commercial purposes, all without asking permission. See Other
-Information below.
-
-Other Information:
-
-* In no way are the patent or trademark rights of any person affected
-by CC0, nor are the rights that other persons may have in the work or
-in how the work is used, such as publicity or privacy rights. 
-
-* Unless expressly stated otherwise, the person who associated a work
-with this deed makes no warranties about the work, and disclaims
-liability for all uses of the work, to the fullest extent permitted
-by applicable law. 
-
-* When using or citing the work, you should not imply endorsement by
-the author or the affirmer.
-
 =head1 METHODS
-=head2 help
-Displays version and usage information.
-=cut
-
-sub help {
-    say(
-        "Version: $VERSION
-
-# Create a session
-pdq new_session SessionName
-cd SessionName
-
-# Shoot images tethered to the system, ideally into a created session
-pdq shoot optional_filename_prefix
-
-# Rename from the \"shootname\" column to the \"filename\" column in manifest.csv
-pdq rename
-
-# duplicate the image folder to a new location
-pdq dupe /Volumes/ExternalDrive 
-
-# update the XMP keyword sidecar files from manifest.csv
-pdq update_xmp
-
-# list what image prefixes are missing from manifest.csv
-pdq check_manifest"
-    );
-}
 
 =head2 new_session
-Create a new session given a directory path.
-Session name argument is required.
+
+Create a new session with the provided name.  Example:
+
+  pdq new_session NewSession
 =cut
 
 sub new_session {
@@ -97,15 +37,11 @@ sub new_session {
     `touch $session_name/$config_file_name`;
 }
 
-sub _check_session_directory {
-    unless ( -e $config_file_name ) {
-        die "You must change (cd) into a valid pdq session directory";
-    }
-}
-
 =head2 shoot
-Shoots some pictures tethered to the camera.
-Filename prefix is optional.
+
+Shoots some pictures tethered to the camera.  Example:
+
+  pdq shoot my_file_name_prefix_
 =cut
 
 sub shoot {
@@ -121,8 +57,10 @@ sub shoot {
 }
 
 =head2 rename
-Renames filenames matching the filename prefix in the first column of a csv to the second column.
-CSV filename is required.
+
+Renames filenames matching the shootname column to the filename column of manifest.csv. Example:
+
+  pdq rename
 =cut
 
 sub rename {
@@ -163,7 +101,10 @@ sub rename {
 }
 
 =head2 dupe
-Duplicates the files from the current session to a new location/session.
+
+Duplicates the files from the current session to a new location/session.  Example:
+
+  pdq dupe /Volume/DriveName
 =cut
 
 sub dupe {
@@ -174,8 +115,10 @@ sub dupe {
 }
 
 =head2 update_xmp
-Creates xmp sidecar files for all files matching the prefixes in the first 
-column of the provided csv, adding subjects (aka keywords) for every subsequent column.
+
+Updates xmp sidecar files with the keywords from manifest.csv. Example:
+
+  pdq update_xmp
 =cut
 
 sub update_xmp {
@@ -212,8 +155,10 @@ sub update_xmp {
 }
 
 =head2 check_manifest
-Verifies that the session directory contains all of the filename patterns
-in the manifest and lists the missing files.
+
+Verifies that the session directory contains all of the filename patterns in the manifest and lists the missing files. Example:
+
+  pdq check_manifest
 =cut
 
 sub check_manifest {
@@ -232,5 +177,52 @@ sub check_manifest {
         }
     }
 }
+
+=head2 help
+
+Displays version and usage information.  Example:
+
+  pdq help
+=cut
+
+sub help {
+    say("Version: $VERSION");
+	`perldoc App::PrettyDamQuick`;
+}
+
+=head1 AUTHOR
+
+Chris Alef, C<< <chris at crickertech.com> >>
+
+=head1 LICENSE AND COPYRIGHT
+
+Copyright 2016 Chris Alef.
+
+This program is distributed under the CC0 1.0 Universal License:
+L<http://creativecommons.org/publicdomain/zero/1.0/>
+
+The person who associated a work with this deed has dedicated the work
+to the public domain by waiving all of his or her rights to the work
+worldwide under copyright law, including all related and neighboring
+rights, to the extent allowed by law.
+
+You can copy, modify, distribute and perform the work, even for
+commercial purposes, all without asking permission. See Other
+Information below.
+
+Other Information:
+
+* In no way are the patent or trademark rights of any person affected
+by CC0, nor are the rights that other persons may have in the work or
+in how the work is used, such as publicity or privacy rights. 
+
+* Unless expressly stated otherwise, the person who associated a work
+with this deed makes no warranties about the work, and disclaims
+liability for all uses of the work, to the fullest extent permitted
+by applicable law. 
+
+* When using or citing the work, you should not imply endorsement by
+the author or the affirmer.
+=cut
 
 1;    # End of App::PrettyDamQuick
