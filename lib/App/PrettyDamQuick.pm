@@ -3,7 +3,7 @@ package App::PrettyDamQuick;
 use 5.016;
 use Modern::Perl;
 use Text::CSV::Slurp;
-our $VERSION = '0.04';
+our $VERSION = '0.05';
 my $config_file_name = '.pdq';
 my $csv_filename     = 'manifest.csv';
 
@@ -35,6 +35,18 @@ sub new_session {
     }
     `mkdir $session_name`;
     `touch $session_name/$config_file_name`;
+}
+
+=head2 init
+
+Initializes the current directory for use with pdq.
+=cut
+
+sub init {
+    my $self = shift;
+    my $pwd  = `pwd`;
+    say("Initializing directory $pwd for use with pdq.");
+    `touch $config_file_name`;
 }
 
 =head2 shoot
