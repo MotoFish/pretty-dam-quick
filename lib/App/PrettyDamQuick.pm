@@ -3,7 +3,7 @@ package App::PrettyDamQuick;
 use 5.016;
 use Modern::Perl;
 use Text::CSV::Slurp;
-our $VERSION = '0.05';
+our $VERSION = '0.06';
 my $config_file_name = '.pdq';
 my $csv_filename     = 'manifest.csv';
 
@@ -128,7 +128,7 @@ sub dupe {
 
 =head2 update_xmp
 
-Updates xmp sidecar files with the keywords from manifest.csv. Example:
+Updates xmp sidecar files with the keywords and description from manifest.csv. Example:
 
   pdq update_xmp
 =cut
