@@ -3,7 +3,7 @@ package App::PrettyDamQuick;
 use 5.016;
 use Modern::Perl;
 use Text::CSV::Slurp;
-our $VERSION = '0.06';
+our $VERSION = '0.07';
 my $config_file_name = '.pdq';
 my $csv_filename     = 'manifest.csv';
 
@@ -190,7 +190,7 @@ sub check_manifest {
           || die "Could not find column \"filename\" to apply keywords to";
 
         #find filenames matching the line of the manifest
-        my $matching_filenames = `ls $to_filename_pattern*.xmp 2>/dev/null`;
+        my $matching_filenames = `ls $to_filename_pattern*.* 2>/dev/null`;
         my @filenames = split /\n/, $matching_filenames;
         if ( scalar @filenames < 1 ) {
             say("  $to_filename_pattern");
