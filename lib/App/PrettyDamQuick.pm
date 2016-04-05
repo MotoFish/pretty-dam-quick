@@ -19,6 +19,88 @@ App::PrettyDamQuick
 
 =head1 METHODS
 
+=method check_manifest
+
+Verifies that the session directory contains all of the filename patterns in the manifest and lists the missing files. Example:
+
+  pdq check_manifest
+=cut
+
+sub check_manifest {
+    my $self = shift;
+    $self->_check_session_directory;
+    my $data = Text::CSV::Slurp->load( file => $csv_filename )
+      || die "Could not open $csv_filename";
+    my %extra_filenames = map { $_ => 1 } split /\n/, `ls`;
+    say("Missing files:");
+
+    #display the missing filenames
+    for my $line (@$data) {
+        my $to_filename_pattern = $line->{'filename'}
+          || die "Could not find column \"filename\" to apply keywords to";
+
+        #find filenames matching the line of the manifest
+        my $matching_filenames = `ls $to_filename_pattern*.* 2>/dev/null`;
+        my @filenames = split /\n/, $matching_filenames;
+        if ( scalar @filenames < 1 ) {
+            say("  $to_filename_pattern");
+            next;
+        }
+
+        #remove extra filenames that match names in the manifest
+        for my $filename ( keys %extra_filenames ) {
+            if ( $filename =~ /^$to_filename_pattern/ ) {
+                delete $extra_filenames{$filename};
+            }
+        }
+    }
+
+    #display the extra filenames
+    if ( scalar keys %extra_filenames > 0 ) {
+        say("Extra files:");
+        for my $filename ( keys %extra_filenames ) {
+            say("  $filename");
+        }
+    }
+}
+
+=method dupe
+
+Duplicates the files from the current session to a new location/session.  Example:
+
+  pdq dupe /Volume/DriveName
+=cut
+
+sub dupe {
+    my $self                       = shift;
+    my $destination_directory_path = shift;
+    $self->_check_session_directory;
+    say(`rsync -avhz . $destination_directory_path`);
+}
+
+=method help
+
+Displays version and usage information.  Example:
+
+  pdq help
+=cut
+
+sub help {
+    say(`perldoc App::PrettyDamQuick`);
+}
+
+=method init
+
+Initializes the current directory for use with pdq.
+=cut
+
+sub init {
+    my $self = shift;
+    my $pwd  = `pwd`;
+    say("Initializing directory $pwd for use with pdq.");
+    `touch $config_file_name`;
+}
+
 =method new_session
 
 Create a new session with the provided name.  Example:
@@ -34,37 +116,6 @@ sub new_session {
     }
     `mkdir $session_name`;
     `touch $session_name/$config_file_name`;
-}
-
-=method init
-
-Initializes the current directory for use with pdq.
-=cut
-
-sub init {
-    my $self = shift;
-    my $pwd  = `pwd`;
-    say("Initializing directory $pwd for use with pdq.");
-    `touch $config_file_name`;
-}
-
-=method shoot
-
-Shoots some pictures tethered to the camera.  Example:
-
-  pdq shoot my_file_name_prefix_
-=cut
-
-sub shoot {
-    my $self = shift;
-    my $filename_prefix = shift || '';
-    $self->_check_session_directory;
-
-    #free up the usb port: http://tinyurl.com/hchdopy
-    system "killall -SIGINT PTPCamera";
-
-    # Shoot tethered photos using the optionally provided filename_prefix.
-    say(`gphoto2 --capture-tethered --filename=$filename_prefix%03n.%C`);
 }
 
 =method rename
@@ -111,18 +162,23 @@ sub rename {
     }
 }
 
-=method dupe
+=method shoot
 
-Duplicates the files from the current session to a new location/session.  Example:
+Shoots some pictures tethered to the camera.  Example:
 
-  pdq dupe /Volume/DriveName
+  pdq shoot my_file_name_prefix_
 =cut
 
-sub dupe {
-    my $self                       = shift;
-    my $destination_directory_path = shift;
+sub shoot {
+    my $self = shift;
+    my $filename_prefix = shift || '';
     $self->_check_session_directory;
-    say(`rsync -avhz . $destination_directory_path`);
+
+    #free up the usb port: http://tinyurl.com/hchdopy
+    system "killall -SIGINT PTPCamera";
+
+    # Shoot tethered photos using the optionally provided filename_prefix.
+    say(`gphoto2 --capture-tethered --filename=$filename_prefix%03n.%C`);
 }
 
 =method update_xmp
@@ -166,62 +222,6 @@ sub update_xmp {
             `rm *.xmp_original`;
         }
     }
-}
-
-=method check_manifest
-
-Verifies that the session directory contains all of the filename patterns in the manifest and lists the missing files. Example:
-
-  pdq check_manifest
-=cut
-
-sub check_manifest {
-    my $self = shift;
-    $self->_check_session_directory;
-    my $data = Text::CSV::Slurp->load( file => $csv_filename )
-      || die "Could not open $csv_filename";
-    my %extra_filenames = map { $_ => 1 } split /\n/, `ls`;
-    say("Missing files:");
-
-    #display the missing filenames
-    for my $line (@$data) {
-        my $to_filename_pattern = $line->{'filename'}
-          || die "Could not find column \"filename\" to apply keywords to";
-
-        #find filenames matching the line of the manifest
-        my $matching_filenames = `ls $to_filename_pattern*.* 2>/dev/null`;
-        my @filenames = split /\n/, $matching_filenames;
-        if ( scalar @filenames < 1 ) {
-            say("  $to_filename_pattern");
-            next;
-        }
-
-        #remove extra filenames that match names in the manifest
-        for my $filename ( keys %extra_filenames ) {
-            if ( $filename =~ /^$to_filename_pattern/ ) {
-                delete $extra_filenames{$filename};
-            }
-        }
-    }
-
-    #display the extra filenames
-    if ( scalar keys %extra_filenames > 0 ) {
-        say("Extra files:");
-        for my $filename ( keys %extra_filenames ) {
-            say("  $filename");
-        }
-    }
-}
-
-=method help
-
-Displays version and usage information.  Example:
-
-  pdq help
-=cut
-
-sub help {
-    say(`perldoc App::PrettyDamQuick`);
 }
 
 1;
