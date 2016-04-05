@@ -20,3 +20,5 @@ nytprof.out
 *.tdy
 /_eumm/
 MANIFEST
+.tidyall.d/
+App-PrettyDamQuick-*

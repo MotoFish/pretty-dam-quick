@@ -1,9 +1,8 @@
 package App::PrettyDamQuick;
 
-use 5.016;
-use Modern::Perl;
-use Text::CSV::Slurp;
-our $VERSION = '0.07';
+use strict;
+use Modern::Perl 1.20150127;
+use Text::CSV::Slurp 1.03;
 my $config_file_name = '.pdq';
 my $csv_filename     = 'manifest.csv';
 
@@ -13,14 +12,14 @@ sub _check_session_directory {
     }
 }
 
-=head1 NAME
+# ABSTRACT: Pretty Damn Quick (aka pdq) is a program to automate digital image ingestion from cameras and facilitate production workflows activities within a digital studio.
 
-App::PrettyDamQuick - Pretty Damn Quick (aka pdq) is a program to automate digital image ingestion 
-from cameras and facilitate production workflows activities within a digital studio.
+=head1 NAME
+App::PrettyDamQuick
 
 =head1 METHODS
 
-=head2 new_session
+=method new_session
 
 Create a new session with the provided name.  Example:
 
@@ -37,7 +36,7 @@ sub new_session {
     `touch $session_name/$config_file_name`;
 }
 
-=head2 init
+=method init
 
 Initializes the current directory for use with pdq.
 =cut
@@ -49,7 +48,7 @@ sub init {
     `touch $config_file_name`;
 }
 
-=head2 shoot
+=method shoot
 
 Shoots some pictures tethered to the camera.  Example:
 
@@ -68,7 +67,7 @@ sub shoot {
     say(`gphoto2 --capture-tethered --filename=$filename_prefix%03n.%C`);
 }
 
-=head2 rename
+=method rename
 
 Renames filenames matching the shootname column to the filename column of manifest.csv. Example:
 
@@ -112,7 +111,7 @@ sub rename {
     }
 }
 
-=head2 dupe
+=method dupe
 
 Duplicates the files from the current session to a new location/session.  Example:
 
@@ -126,7 +125,7 @@ sub dupe {
     say(`rsync -avhz . $destination_directory_path`);
 }
 
-=head2 update_xmp
+=method update_xmp
 
 Updates xmp sidecar files with the keywords and description from manifest.csv. Example:
 
@@ -169,7 +168,7 @@ sub update_xmp {
     }
 }
 
-=head2 check_manifest
+=method check_manifest
 
 Verifies that the session directory contains all of the filename patterns in the manifest and lists the missing files. Example:
 
@@ -214,7 +213,7 @@ sub check_manifest {
     }
 }
 
-=head2 help
+=method help
 
 Displays version and usage information.  Example:
 
@@ -222,8 +221,7 @@ Displays version and usage information.  Example:
 =cut
 
 sub help {
-    say("Version: $VERSION");
     say(`perldoc App::PrettyDamQuick`);
 }
 
-1;    # End of App::PrettyDamQuick
+1;

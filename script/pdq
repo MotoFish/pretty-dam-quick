@@ -1,22 +1,22 @@
 #!perl
 
-use Modern::Perl;
+use Modern::Perl 1.20150127;
 use App::PrettyDamQuick;
-use Try::Tiny;
+use Try::Tiny 0.24;
 
 my @args = @ARGV;
 my $command = shift @args || 'help';
 
-if (App::PrettyDamQuick->can($command)) {
-	try {
-		App::PrettyDamQuick->$command(@args);
-	}
-	catch {
-		system('cowsay', '-d', $_);
-	};
+if ( App::PrettyDamQuick->can($command) ) {
+    try {
+        App::PrettyDamQuick->$command(@args);
+    }
+    catch {
+        say($_);
+    };
 }
 else {
-    system('cowsay', "$command is not a command");
+    say("$command is not a command");
     App::PrettyDamQuick->help;
 }
 1;
