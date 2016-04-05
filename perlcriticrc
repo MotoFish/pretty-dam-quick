@@ -1,0 +1,9 @@
+only = 1
+severity = 1
+verbose = %m at %f line %l [%p]\n
+
+[Variables::ProhibitConditionalDeclarations]
+[ControlStructures::ProhibitPostfixControls]
+allow = if unless
+severity = 2
+[TestingAndDebugging::RequireTestLabels]
