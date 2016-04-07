@@ -12,7 +12,7 @@ sub _check_session_directory {
     }
 }
 
-# ABSTRACT: Pretty Damn Quick (aka pdq) is a program to automate digital image ingestion from cameras and facilitate production workflows activities within a digital studio.
+# ABSTRACT: Pretty Damn Quick (aka pdq) is a program to automate digital image ingestion from cameras and facilitate production workflow activities within a digital studio.
 
 =head1 NAME
 App::PrettyDamQuick
@@ -103,7 +103,7 @@ sub init {
 
 =method new
 
-Create a new pdq folder with the provided name.  Example:
+Create a new pdq directory with the provided name.  Example:
 
   pdq new NewSession
 =cut
