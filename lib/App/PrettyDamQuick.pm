@@ -101,14 +101,14 @@ sub init {
     `touch $config_file_name`;
 }
 
-=method new_session
+=method new
 
-Create a new session with the provided name.  Example:
+Create a new pdq folder with the provided name.  Example:
 
-  pdq new_session NewSession
+  pdq new NewSession
 =cut
 
-sub new_session {
+sub new {
     my $self         = shift;
     my $session_name = shift;
     unless ($session_name) {
