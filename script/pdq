@@ -1,5 +1,13 @@
 #!perl
 
+# PODNAME: pdq
+
+# ABSTRACT: Pretty Damn Quick (aka pdq) is a program to automate digital image ingestion from cameras and facilitate production workflows activities within a digital studio.
+
+=head1 SYNOPSIS
+For documentation use: pdq help
+=cut
+
 use Modern::Perl 1.20150127;
 use App::PrettyDamQuick;
 use Try::Tiny 0.24;
