@@ -3,6 +3,7 @@ package App::PrettyDamQuick;
 use strict;
 use Modern::Perl 1.20150127;
 use Text::CSV::Slurp 1.03;
+use Image::ExifTool 10.10;
 my $config_file_name = '.pdq';
 my $csv_filename     = 'manifest.csv';
 
